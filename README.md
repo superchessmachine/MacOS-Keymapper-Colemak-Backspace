@@ -1,50 +1,92 @@
-# Caps Lock → Backspace mapper
+# Lightweight macOS keymapper
 
-This repo provides a tiny `hidutil` script plus a matching `launchd` agent that applies a Caps Lock -> Backspace mapping automatically each time you log in.
+Still all about that Colemak-friendly Caps Lock → Backspace remap, but now with a couple of ultra-lightweight helpers for any macOS keymap you want to throw at `hidutil`.
 
-## Contents
+## What's inside
 
-- `scripts/remap_caps_to_backspace.sh` &mdash; runs the `hidutil property --set …` command.
-- `launch_agents/com.keymapper.capslock-backspace.plist` &mdash; sample LaunchAgent that runs the script once at login.
+- `scripts/remap_caps_to_backspace.sh` — single-purpose Bash script that keeps the original behavior alive.
+- `launch_agents/com.keymapper.capslock-backspace.plist` — optional LaunchAgent that reruns the script each time you log in.
+- `scripts/show_key_ids.sh` — runs `hidutil eventmonitor` so you can press keys or mouse buttons and read their usage IDs instantly.
+- `scripts/build_custom_mapping.sh` — tiny interactive script that asks “map what to what?” and writes a JSON config (showing your growing list of remaps as you add them).
+- `configs/keymap.template.json` — ready-to-edit template if you’d rather type mappings manually.
+- `scripts/keymapper.sh` — an all-in-one helper that walks through the backspace remap, key-ID tester, and custom mapping workflow in one terminal session.
 
-## One-time test
+All of this stays super minimal: only Bash and the built-in `hidutil`, no installers, and the only files produced are the plain JSON configs you ask for.
+
+## Quick one-off test (Caps → Backspace)
 
 ```bash
 ./scripts/remap_caps_to_backspace.sh
 ```
 
-If the command succeeds, Caps Lock immediately behaves like Backspace until the next reboot.
+As soon as it succeeds, Caps Lock behaves like Backspace until you reboot or apply another map.
 
-## Install as a background task
+## Keep it running every login
 
-1. Copy the LaunchAgent into `~/Library/LaunchAgents` (create the folder if needed):
+1. Copy the LaunchAgent into `~/Library/LaunchAgents` (create it first if missing):
    ```bash
    cp launch_agents/com.keymapper.capslock-backspace.plist ~/Library/LaunchAgents/
    ```
-2. The plist contains an absolute path to the script (`/Users/ysb/Coding/keymapper/scripts/...`). Update that path if you keep the repo somewhere else.
-3. Load the agent so it runs once right away and on future logins:
+2. Edit the plist and point the `ProgramArguments` entry at your local repo path (the sample uses `/Users/ysb/Coding/keymapper/...`).
+3. Load it so it fires once now and automatically on future logins:
    ```bash
    launchctl load -w ~/Library/LaunchAgents/com.keymapper.capslock-backspace.plist
    ```
 
-`launchd` runs the script in the background at login, so the remap re-applies automatically after each reboot. The agent writes a small log to `/tmp/com.keymapper.capslock-backspace.log`, which is helpful for troubleshooting.
+`launchd` writes a small log to `/tmp/com.keymapper.capslock-backspace.log`, which is handy if you need to troubleshoot.
 
-## Verify the mapping
+## Inspect key/button IDs
 
-You can inspect current mappings with:
+```bash
+./scripts/show_key_ids.sh
+```
+
+It streams `UsagePage`/`Usage` IDs for each keypress or mouse click. Press `Ctrl+C` (or let the all-in-one helper stop it for you) when you’re done collecting numbers.
+
+## Build a config interactively
+
+```bash
+./scripts/build_custom_mapping.sh
+```
+
+Pick an output path (defaults to `configs/custom_mapping.json`), then keep answering “source key → destination key” pairs. After each entry you’ll see the full list so you can double-check before writing the JSON file.
+
+## Prefer editing by hand?
+
+`configs/keymap.template.json` is a valid `hidutil` file with two sample remaps. Duplicate it, change the usage IDs, and feed the result straight into `hidutil`:
+
+```bash
+hidutil property --set "$(cat path/to/your_config.json)"
+```
+
+## All-in-one lightweight workflow
+
+```bash
+./scripts/keymapper.sh
+```
+
+The helper asks if you want to:
+
+1. Apply the original Caps Lock → Backspace remap.
+2. Peek at raw key IDs (it runs the inspector in the background and stops it when you press Enter).
+3. Build a custom keymap file (using the same “show your list on every addition” flow as `build_custom_mapping.sh`) and optionally apply it immediately.
+4. Apply any existing JSON file (template, downloaded, etc.).
+
+Re-run it whenever you want to toggle the simple remap, generate a fresh config, or just sanity-check a key ID.
+
+## Verify active mappings
 
 ```bash
 hidutil property --get "UserKeyMapping"
 ```
 
-You should see the `0x700000039` (Caps Lock) -> `0x70000002A` (Delete/Backspace) entry.
+You should see entries such as `0x700000039` → `0x70000002A` for the Caps → Backspace swap.
 
-## Remove/unload
+## Remove/unload the LaunchAgent
 
 ```bash
 launchctl unload ~/Library/LaunchAgents/com.keymapper.capslock-backspace.plist
 rm ~/Library/LaunchAgents/com.keymapper.capslock-backspace.plist
 ```
 
-After unloading, reboot (or re-run `hidutil` with your preferred mapping) to restore the default behavior.
-# MacOS-Colemak-Backspace
+After unloading, reboot (or apply a different JSON config) to restore the default layout.
