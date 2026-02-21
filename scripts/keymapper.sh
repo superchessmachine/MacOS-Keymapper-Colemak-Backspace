@@ -38,8 +38,17 @@ run_key_inspector() {
   wait "${inspector_pid}" 2>/dev/null || true
 }
 
+run_media_mapper() {
+  local mapper="${SCRIPT_DIR}/device_media_mapper.sh"
+  if [[ ! -x "${mapper}" ]]; then
+    echo "Media mapper helper ${mapper} is missing." >&2
+    return 1
+  fi
+  "${mapper}"
+}
+
 echo "Ultra-lightweight macOS keymapper 🪶"
-echo "Everything here is just bash + hidutil."
+echo "Everything here is just bash + hidutil (with python3 only for device detection)."
 echo
 
 if confirm "Apply the built-in Caps Lock → Backspace mapping now?"; then
@@ -48,6 +57,10 @@ fi
 
 if confirm "Do you want to look up key or button IDs first?"; then
   run_key_inspector
+fi
+
+if confirm "Map or customize Page Up/Down/Pause/Scroll Lock on a specific keyboard to media controls?"; then
+  run_media_mapper
 fi
 
 CUSTOM_OUTPUT_PATH="configs/custom_mapping.json"

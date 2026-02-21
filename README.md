@@ -6,12 +6,13 @@ Still all about that Colemak-friendly Caps Lock → Backspace remap, but now wit
 
 - `scripts/remap_caps_to_backspace.sh` — single-purpose Bash script that keeps the original behavior alive.
 - `launch_agents/com.keymapper.capslock-backspace.plist` — optional LaunchAgent that reruns the script each time you log in.
-- `scripts/show_key_ids.sh` — runs `hidutil eventmonitor` so you can press keys or mouse buttons and read their usage IDs instantly.
+- `scripts/show_key_ids.sh` — runs `hidutil eventmonitor` so you can press keys or mouse buttons and read their usage IDs instantly (with optional matching filters).
 - `scripts/build_custom_mapping.sh` — tiny interactive script that asks “map what to what?” and writes a JSON config (showing your growing list of remaps as you add them).
+- `scripts/device_media_mapper.sh` — enumerates connected keyboards, lets you customize the Page Up/Down/Pause/Scroll Lock profile, then applies it to whichever device you pick.
 - `configs/keymap.template.json` — ready-to-edit template if you’d rather type mappings manually.
 - `scripts/keymapper.sh` — an all-in-one helper that walks through the backspace remap, key-ID tester, and custom mapping workflow in one terminal session.
 
-All of this stays super minimal: only Bash and the built-in `hidutil`, no installers, and the only files produced are the plain JSON configs you ask for.
+All of this stays super minimal: only Bash, stock `python3`, and the built-in `hidutil`, no installers, and the only files produced are the plain JSON configs you ask for.
 
 ## Quick one-off test (Caps → Backspace)
 
@@ -39,9 +40,28 @@ As soon as it succeeds, Caps Lock behaves like Backspace until you reboot or app
 
 ```bash
 ./scripts/show_key_ids.sh
+./scripts/show_key_ids.sh --matching '{"VendorID":0x5ac,"ProductID":0x24f}' --keyboard-only
 ```
 
-It streams `UsagePage`/`Usage` IDs for each keypress or mouse click. Press `Ctrl+C` (or let the all-in-one helper stop it for you) when you’re done collecting numbers.
+It streams `UsagePage`/`Usage` IDs for each keypress or mouse click. Press `Ctrl+C` (or let the all-in-one helper stop it for you) when you’re done collecting numbers. Pass `--matching '<json or preset>'` to limit output to a specific device (e.g., one keyboard) before you build a per-device config.
+
+## Remap special keys on one keyboard
+
+```bash
+./scripts/device_media_mapper.sh
+```
+
+The helper uses `hidutil list --ndjson` (parsed by the system `python3`) to show every connected keyboard-like device. Pick your external keyboard, optionally run the inspector scoped to that device, then either keep the default profile below or customize each entry right in the script (type `list` when prompted to see all destination actions, or `skip` to remove an entry):
+
+| Default source | Default destination |
+| -------------- | ------------------- |
+| Caps Lock      | Backspace           |
+| Page Up        | Volume Up           |
+| Page Down      | Volume Down         |
+| Pause / Break  | Mute                |
+| Scroll Lock    | Lock Screen         |
+
+The `Lock Screen` destination uses the HID consumer “Terminal Lock / Screensaver” usage. If you ever want to clear the profile for that device, run `hidutil property --matching '<same JSON>' --set '{"UserKeyMapping":[]}'`.
 
 ## Build a config interactively
 
@@ -69,8 +89,9 @@ The helper asks if you want to:
 
 1. Apply the original Caps Lock → Backspace remap.
 2. Peek at raw key IDs (it runs the inspector in the background and stops it when you press Enter).
-3. Build a custom keymap file (using the same “show your list on every addition” flow as `build_custom_mapping.sh`) and optionally apply it immediately.
-4. Apply any existing JSON file (template, downloaded, etc.).
+3. Target a specific keyboard and map (or customize) Page Up/Down/Pause/Scroll Lock to volume/mute/lock actions.
+4. Build a custom keymap file (using the same “show your list on every addition” flow as `build_custom_mapping.sh`) and optionally apply it immediately.
+5. Apply any existing JSON file (template, downloaded, etc.).
 
 Re-run it whenever you want to toggle the simple remap, generate a fresh config, or just sanity-check a key ID.
 
