@@ -2,24 +2,22 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key>
-  <string>com.keymapper.capslock-backspace</string>
-
-  <key>ProgramArguments</key>
-  <array>
-    <string>/Users/ysb/Coding/keymapper/scripts/remap_caps_to_backspace.sh</string>
-  </array>
-
-  <key>RunAtLoad</key>
-  <true/>
-
-  <key>KeepAlive</key>
-  <false/>
-
-  <key>StandardOutPath</key>
-  <string>/tmp/com.keymapper.capslock-backspace.log</string>
-
-  <key>StandardErrorPath</key>
-  <string>/tmp/com.keymapper.capslock-backspace.log</string>
+	<key>KeepAlive</key>
+	<false/>
+	<key>Label</key>
+	<string>com.keymapper.capslock-backspace</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/bin/hidutil</string>
+		<string>property</string>
+		<string>--set</string>
+		<string>{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x70000002A}]}</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/tmp/com.keymapper.capslock-backspace.log</string>
+	<key>StandardOutPath</key>
+	<string>/tmp/com.keymapper.capslock-backspace.log</string>
 </dict>
 </plist>

@@ -28,7 +28,7 @@ As soon as it succeeds, Caps Lock behaves like Backspace until you reboot or app
    ```bash
    cp launch_agents/com.keymapper.capslock-backspace.plist ~/Library/LaunchAgents/
    ```
-2. Edit the plist and point the `ProgramArguments` entry at your local repo path (the sample uses `/Users/ysb/Coding/keymapper/...`).
+2. The plists call `/usr/bin/hidutil` directly. Do not point them at scripts under `~/Documents`: launchd agents get "Operation not permitted" there (TCC), which silently breaks the remap on boot.
 3. Load it so it fires once now and automatically on future logins:
    ```bash
    launchctl load -w ~/Library/LaunchAgents/com.keymapper.capslock-backspace.plist

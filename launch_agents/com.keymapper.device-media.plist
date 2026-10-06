@@ -2,24 +2,24 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key>
-  <string>com.keymapper.device-media</string>
-
-  <key>ProgramArguments</key>
-  <array>
-    <string>/Users/ysb/Coding/keymapper/scripts/apply_usb_hid_media_profile.sh</string>
-  </array>
-
-  <key>RunAtLoad</key>
-  <true/>
-
-  <key>KeepAlive</key>
-  <false/>
-
-  <key>StandardOutPath</key>
-  <string>/tmp/com.keymapper.device-media.log</string>
-
-  <key>StandardErrorPath</key>
-  <string>/tmp/com.keymapper.device-media.log</string>
+	<key>KeepAlive</key>
+	<false/>
+	<key>Label</key>
+	<string>com.keymapper.device-media</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/bin/hidutil</string>
+		<string>property</string>
+		<string>--matching</string>
+		<string>{"VendorID":0x5ac,"ProductID":0x24f,"LocationID":0x1120000}</string>
+		<string>--set</string>
+		<string>{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x70000002A},{"HIDKeyboardModifierMappingSrc":0x70000004B,"HIDKeyboardModifierMappingDst":0xC000000E9},{"HIDKeyboardModifierMappingSrc":0x70000004E,"HIDKeyboardModifierMappingDst":0xC000000EA},{"HIDKeyboardModifierMappingSrc":0x700000048,"HIDKeyboardModifierMappingDst":0xC000000E2},{"HIDKeyboardModifierMappingSrc":0x700000047,"HIDKeyboardModifierMappingDst":0xC0000019E}]}</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/tmp/com.keymapper.device-media.log</string>
+	<key>StandardOutPath</key>
+	<string>/tmp/com.keymapper.device-media.log</string>
 </dict>
 </plist>
